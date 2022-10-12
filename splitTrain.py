@@ -27,4 +27,5 @@ def split_train(data, proportion, nsteps, noutputs):
         yT = test[:, -noutputs:]
         return X, y, XT, yT
     else:
+        print('Proportion greather than 1 or lower than 0')
         return 0, 0, 0, 0
