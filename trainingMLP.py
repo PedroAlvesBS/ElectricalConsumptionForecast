@@ -4,9 +4,9 @@ import tensorflow as tf
 def training_MLP(X, y, Xt, nsteps, noutputs):
     # Defining the model
     model = tf.keras.Sequential()
-    model.add(tf.keraslayers.Dense(20, activation='relu', input_dim=nsteps))
-    model.add(tf.keraslayers.Dense(20, activation='relu'))
-    model.add(tf.keraslayers.Dense(noutputs))
+    model.add(tf.keras.layers.Dense(20, activation='relu', input_dim=nsteps))
+    model.add(tf.keras.layers.Dense(20, activation='relu'))
+    model.add(tf.keras.layers.Dense(noutputs))
     model.compile(optimizer='adam', loss='mse')
 
     # Fitting the model
