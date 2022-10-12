@@ -4,12 +4,27 @@ from trainingMLP import training_MLP
 from meanSquaredError import MeanSquaredError
 import matplotlib.pyplot as plt
 from pandas import ExcelWriter, DataFrame
+from os.path import isdir
+from os import makedirs
 
 
 def generating_report(data, rate, name, nsteps, noutputs, mvalue):
+    '''
+    This function will receive 6 parameters:
+        data: normalized data
+        rate: 0 < x <1 of the splitted data, this corresponds to percentual 
+              used to train the model
+        name: tris parameter will ve used in the file report creation
+        nsteps: is the number of neurons in the input layer
+        noutputs: is the number of neuron in the output layer
+        mvalue: is the maximum value in the nomalized data
 
-    path = f'./reports/T/{name}/'
-    #path = f'./'
+        It is important to say that this  function do not return anything, 
+        beyond a report excel file and a figure of the prediction
+    '''
+    path = f'./reports/T+{noutputs}/{name}/'
+    if not isdir(path):
+        makedirs(path)
 
     data_formatted = formatting_the_univariate_data(data, nsteps, noutputs)
 
@@ -65,3 +80,4 @@ def generating_report(data, rate, name, nsteps, noutputs, mvalue):
         writer.save()
 
     writer.close()
+    print('\nFinished...\n')
