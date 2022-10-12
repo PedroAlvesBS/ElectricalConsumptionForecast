@@ -1,14 +1,17 @@
+from msilib.schema import Error
 from formattingUniData import formatting_the_univariate_data
 from splitTrain import split_train
 from trainingMLP import training_MLP
 from meanSquaredError import MeanSquaredError
 import matplotlib.pyplot as plt
-from pandas import ExcelWriter, DataFrame
+from pandas import ExcelWriter, DataFrame, read_csv
 from os.path import isdir
 from os import makedirs
+from exceptionsTreating import exceptions_treating
+from normalize import normalize
 
 
-def generating_report(data, rate, name, nsteps, noutputs, mvalue):
+def generating_report(rate, name, nsteps, noutputs):
     '''
     This function will receive 6 parameters:
         data: normalized data
@@ -22,62 +25,87 @@ def generating_report(data, rate, name, nsteps, noutputs, mvalue):
         It is important to say that this  function do not return anything, 
         beyond a report excel file and a figure of the prediction
     '''
-    path = f'./reports/T+{noutputs}/{name}/'
-    if not isdir(path):
-        makedirs(path)
+    data = read_csv('./data.csv')
 
-    data_formatted = formatting_the_univariate_data(data, nsteps, noutputs)
+    norm_dataset = normalize(data)
+    st, ct = exceptions_treating(norm_dataset, rate, nsteps, noutputs)
+    try:
+        if ct > 0:
+            raise (Error)
 
-    X_tr, y_tr, X_ts, y_ts = split_train(
-        data_formatted, rate, nsteps, noutputs)
+        # Generating the first Graphic
+        fig, ax = plt.subplots()
+        ax.plot(data['POWER'])
+        ax.set_title(
+            'Time series of Brazilian electrical consumption througout the years', fontdict={
+                'fontsize': 12}, pad=20)
+        ax.set_xlabel('Time (months)')
+        ax.set_ylabel(f'Electrical Consumption(MWh)')
+        fig.savefig('Time series.png')
+        path = f'./reports/T+{noutputs}/{name}/'
 
-    out, model = training_MLP(X_tr, y_tr, X_ts, nsteps, noutputs)
+        if not isdir(path):
+            makedirs(path)
 
-    # Printing The comparison between both
-    plt.plot(out*mvalue, color='red', label='Forecast')
-    plt.plot(y_ts*mvalue, color='blue', label='Test Serie')
-    plt.xlabel('Months')
-    plt.title(f'Forecast the electrical energy consumption through {len(out)} months', fontdict={
-              'fontsize': 14}, pad=20)
-    plt.ylabel('Electrical Energy Compuption (MWh)')
-    plt.legend(loc='upper left')
-    plt.savefig(f'{path}fig{name}.png')
+        data_formatted = formatting_the_univariate_data(
+            norm_dataset, nsteps, noutputs)
 
-    # Creating Excel
-    nlayers = len(model.layers)
-    row = 0
+        X_tr, y_tr, X_ts, y_ts = split_train(
+            data_formatted, rate, nsteps, noutputs)
 
-    writer = ExcelWriter(f'{path}Report{name}.xlsx', engine='openpyxl')
+        out, model = training_MLP(X_tr, y_tr, X_ts, nsteps, noutputs)
 
-    doOut = out.flatten()
-    doYts = y_ts.flatten()
-    dfOutput = DataFrame({'Forecasted': doOut,
-                          'Expected': doYts,
-                          'Difference': doOut-doYts})
-    dfOutput.to_excel(writer, sheet_name='Output', index=False)
+        mvalue = data['POWER'].max()
 
-    doMSE = [MeanSquaredError(out, y_ts)]
-    dfMse = DataFrame({'MSE': doMSE})
-    dfMse.to_excel(writer, sheet_name='MSE', index=False)
+        # Printing The comparison between both
+        fig, ax = plt.subplots()
+        ax.plot(out*mvalue, color='red', label='Forecast')
+        ax.plot(y_ts*mvalue, color='blue', label='Test Serie')
+        ax.set_title(
+            'Time series of Brazilian electrical consumption througout the years', fontdict={
+                'fontsize': 12}, pad=20)
+        ax.set_xlabel('Time (months)')
+        ax.set_ylabel(f'Electrical Consumption(MWh)')
+        fig.savefig(f'{path}fig{name}.png')
 
-    for i in range(nlayers):
-        varname = f'df{i}'
-        bib = ' = DataFrame('
-        finalproduct = varname + bib + '{'
-        worb = len(model.layers[i].get_weights())
-        for j in range(worb):
-            neurons = len(model.layers[i].get_weights()[j])
-            for k in range(neurons):
-                if j == 0:
-                    finalproduct += f'\'L{i+1}Wn{k+1}\': model.layers[{i}].get_weights()[{j}][{k}],'
-                else:
-                    finalproduct += f'\'L{i+1}B\':model.layers[{i}].get_weights()[{j}]'
-                    break
-        finalproduct += '})'
-        exec(finalproduct)
-        exec(f'{varname}.to_excel(writer, sheet_name=\'WeightsAndBiases\', startrow={row}, index=False)')
-        row += 22
-        writer.save()
+        # Creating Excel
+        nlayers = len(model.layers)
+        row = 0
 
-    writer.close()
-    print('\nFinished...\n')
+        writer = ExcelWriter(f'{path}Report{name}.xlsx', engine='openpyxl')
+
+        doOut = out.flatten()
+        doYts = y_ts.flatten()
+        dfOutput = DataFrame({'Forecasted': doOut,
+                              'Expected': doYts,
+                              'Difference': doOut-doYts})
+        dfOutput.to_excel(writer, sheet_name='Output', index=False)
+
+        doMSE = [MeanSquaredError(out, y_ts)]
+        dfMse = DataFrame({'MSE': doMSE})
+        dfMse.to_excel(writer, sheet_name='MSE', index=False)
+
+        for i in range(nlayers):
+            varname = f'df{i}'
+            bib = ' = DataFrame('
+            finalproduct = varname + bib + '{'
+            worb = len(model.layers[i].get_weights())
+            for j in range(worb):
+                neurons = len(model.layers[i].get_weights()[j])
+                for k in range(neurons):
+                    if j == 0:
+                        finalproduct += f'\'L{i+1}Wn{k+1}\': model.layers[{i}].get_weights()[{j}][{k}],'
+                    else:
+                        finalproduct += f'\'L{i+1}B\':model.layers[{i}].get_weights()[{j}]'
+                        break
+            finalproduct += '})'
+            exec(finalproduct)
+            exec(
+                f'{varname}.to_excel(writer, sheet_name=\'WeightsAndBiases\', startrow={row}, index=False)')
+            row += 22
+            writer.save()
+
+        writer.close()
+        print('\nFinished...\n')
+    except:
+        print(st)
