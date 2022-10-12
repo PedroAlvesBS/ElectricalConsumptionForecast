@@ -11,8 +11,11 @@ def MeanSquaredError(expected, forecasted):
         >> 243
 
     '''
-    if expected.shape != forecasted.shape:
-        print(
-            f"Shapes do not match expected{expected.shape} x forecasted {forecasted.shape}")
-    else:
-        return (pow((expected-forecasted), 2).sum())/len(forecasted)
+    try:
+        if expected.shape != forecasted.shape:
+            print(
+                f"Shapes do not match expected{expected.shape} x forecasted {forecasted.shape}")
+        else:
+            return (pow((expected-forecasted), 2).sum())/len(forecasted)
+    except:
+        print('The parameters given do not correspond to Pandas DataFrames')
