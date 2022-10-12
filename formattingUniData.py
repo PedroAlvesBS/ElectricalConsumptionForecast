@@ -24,8 +24,7 @@ def formatting_the_univariate_data(data, n_steps, n_output=1):
     is the output expected.
 
     '''
-
-    if n_steps > 0 and n_steps + n_output < len(data):
+    if n_steps > 0 and n_steps + n_output < len(data) and n_output > 0:
 
         C_LENGTH = n_steps + n_output
         f_output = []
