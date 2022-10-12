@@ -1,13 +1,7 @@
-from pandas import read_csv
 from generatingReport import generating_report
 
 
 def total_execution():
-    dataset = read_csv('./data.csv')
-    max_value = dataset['POWER'].max()
-
-    norm_dataset = dataset['POWER']/max_value
-
     # Put the N of steps,
     #        N of outputs
     #        ^ Univariate data
@@ -18,8 +12,8 @@ def total_execution():
     nm = '60'
     nstp = 3
     nout = 1
-    generating_report(norm_dataset, rate=rt, name=nm,
-                      nsteps=nstp, noutputs=nout, mvalue=max_value)
+    generating_report(rate=rt, name=nm,
+                      nsteps=nstp, noutputs=nout)
 
 
 if __name__ == '__main__':
