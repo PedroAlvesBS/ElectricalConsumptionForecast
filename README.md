@@ -31,10 +31,22 @@ It comprehends monthly records of power in Mega Watt Hour from January - 2004 to
 
 To execute the service you must go to the 'main.py' file and give some parameters.
 
-- **rt** (float: 0 < x < 1): Rate of training data (if 0.6, it will correspond to 60:40/train:test)
+- **rt** (float: 0 < x < 1): Rate of training data (if 0.6, it will correspond to 60:40/train:test).
 
-- **nm** (string): The label of output file
+- **nm** (string): The label of output file.
 
-- **nstp** (integer): Number of input neurons
+- **nstp** (integer): Number of input neurons.
 
-- **nout** (integer): Number of output neuron
+- **nout** (integer): Number of output neuron.
+
+## Output
+
+As output it is expected a file with extension xlxs. Containing 3 sheets.
+
+- The first one will contain the result forecast, expected and the difference between them.
+
+- In the second sheet, is the Mean Squared Error.
+
+-And in the last one are the weights and biases of each layer.
+
+and a figure comparing the values expected and forecast.
