@@ -47,6 +47,6 @@ As output it is expected a file with extension xlxs. Containing 3 sheets.
 
 - In the second sheet, is the Mean Squared Error.
 
--And in the last one are the weights and biases of each layer.
+- And in the last one are the weights and biases of each layer.
 
 and a figure comparing the values expected and forecast.
