@@ -9,10 +9,9 @@ def total_execution():
     # name is the pattern to be outputted
 
     rt = 0.6
-    nm = '60'
-    nstp = 3
+    nstp = 1
     nout = 1
-    generating_report(rate=rt, name=nm,
+    generating_report(rate=rt,
                       nsteps=nstp, noutputs=nout)
 
 
