@@ -11,13 +11,12 @@ from exceptionsTreating import exceptions_treating
 from normalize import normalize
 
 
-def generating_report(rate, name, nsteps, noutputs):
+def generating_report(rate, nsteps, noutputs):
     '''
     This function will receive 6 parameters:
         data: normalized data
         rate: 0 < x <1 of the splitted data, this corresponds to percentual 
               used to train the model
-        name: tris parameter will ve used in the file report creation
         nsteps: is the number of neurons in the input layer
         noutputs: is the number of neuron in the output layer
         mvalue: is the maximum value in the nomalized data
@@ -26,7 +25,7 @@ def generating_report(rate, name, nsteps, noutputs):
         beyond a report excel file and a figure of the prediction
     '''
     data = read_csv('./data.csv')
-
+    name = round(rate*100)
     norm_dataset = normalize(data)
     st, ct = exceptions_treating(norm_dataset, rate, nsteps, noutputs)
     try:
@@ -42,7 +41,7 @@ def generating_report(rate, name, nsteps, noutputs):
         ax.set_xlabel('Time (months)')
         ax.set_ylabel(f'Electrical Consumption(MWh)')
         fig.savefig('Time series.png')
-        path = f'./reports/T+{noutputs}/{name}/'
+        path = f'./reports/{name}/'
 
         if not isdir(path):
             makedirs(path)
@@ -66,13 +65,13 @@ def generating_report(rate, name, nsteps, noutputs):
                 'fontsize': 12}, pad=20)
         ax.set_xlabel('Time (months)')
         ax.set_ylabel(f'Electrical Consumption(MWh)')
-        fig.savefig(f'{path}fig{name}.png')
+        fig.savefig(f'{path}fig{name}_i{nsteps}_o{noutputs}.png')
 
         # Creating Excel
         nlayers = len(model.layers)
         row = 0
 
-        writer = ExcelWriter(f'{path}Report{name}.xlsx', engine='openpyxl')
+        writer = ExcelWriter(f'{path}Report{name}_i{nsteps}_o{noutputs}.xlsx', engine='openpyxl')
 
         doOut = out.flatten()
         doYts = y_ts.flatten()
