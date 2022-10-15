@@ -33,8 +33,6 @@ To execute the service you must go to the 'main.py' file and give some parameter
 
 - **rt** (float: 0 < x < 1): Rate of training data (if 0.6, it will correspond to 60:40/train:test).
 
-- **nm** (string): The label of output file.
-
 - **nstp** (integer): Number of input neurons.
 
 - **nout** (integer): Number of output neuron.
