@@ -65,14 +65,14 @@ def generating_report(rate, nsteps, L1, L2, noutputs):
                 'fontsize': 12}, pad=20)
         ax.set_xlabel('Meses')
         ax.set_ylabel(f'Consumo de energia elétrica (MWh)')
-        fig.savefig(f'{path}fig{name}_i{nsteps}_o{noutputs}.png')
+        fig.savefig(f'{path}fig{name}_i{nsteps}_l1{L1}_l2{L2}_o{noutputs}.png')
 
         # Creating Excel
         nlayers = len(model.layers)
         row = 0
 
         writer = ExcelWriter(
-            f'{path}Report{name}_i{nsteps}_o{noutputs}.xlsx', engine='openpyxl')
+            f'{path}Report{name}_i{nsteps}_l1{L1}_l2{L2}_o{noutputs}.xlsx', engine='openpyxl')
 
         doOut = out.flatten()
         doYts = y_ts.flatten()
