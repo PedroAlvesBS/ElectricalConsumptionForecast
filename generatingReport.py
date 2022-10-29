@@ -5,10 +5,11 @@ from meanSquaredError import MeanSquaredError
 from exceptionsTreating import exceptions_treating
 from normalize import normalize
 import matplotlib.pyplot as plt
-from pandas import ExcelWriter, DataFrame, read_csv
+from pandas import ExcelWriter, DataFrame, read_csv, merge
 from os import makedirs
 from os.path import isdir
 from msilib.schema import Error
+from numpy import append, array
 
 
 def generating_report(rate, nsteps, L1, L2, noutputs):
@@ -53,26 +54,46 @@ def generating_report(rate, nsteps, L1, L2, noutputs):
             data_formatted, rate, nsteps, noutputs)
 
         out, model = training_MLP(X_tr, y_tr, X_ts, nsteps, L1, L2, noutputs)
-
         mvalue = data['POWER'].max()
 
         # Printing The comparison between both
-        fig, ax = plt.subplots()
-        ax.plot(out*mvalue, color='red', label='Forecast')
-        ax.plot(y_ts*mvalue, color='blue', label='Test Serie')
-        ax.set_title(
+        ytr = y_tr*mvalue
+        yout = out*mvalue
+        yts = y_ts*mvalue
+        ytryts = append(ytr, yts)
+
+        # # Make a new dataframe of your prediction values
+        df_new = DataFrame(ytryts)
+        df_new.columns = ['TimeSeries']
+
+        # # Retrieve index values
+        new_index = df_new['TimeSeries'].tail(len(yout)).index
+
+        # # Make a dataframe with your prediction values and your index
+        new_series = DataFrame(index=new_index, data=yout)
+
+        # # Merge the dataframes
+        df_new = merge(df_new, new_series, how='left',
+                       left_index=True, right_index=True)
+        df_new.columns = ['TimeSeries', 'Predictions']
+
+        # # And plot it
+        plt.figure(figsize=(15, 8))
+        plt.plot(df_new['TimeSeries'])
+        plt.plot(df_new['Predictions'], color='red')
+        plt.title(
             f'Previsão da série temporal do consumo de energia elétrica em {len(out)} meses', fontdict={
                 'fontsize': 12}, pad=20)
-        ax.set_xlabel('Meses')
-        ax.set_ylabel(f'Consumo de energia elétrica (MWh)')
-        fig.savefig(f'{path}fig{name}_i{nsteps}_l1{L1}_l2{L2}_o{noutputs}.png')
+        plt.xlabel('Meses')
+        plt.ylabel(f'Consumo de energia elétrica (MWh)')
+        plt.savefig(f'{path}R{name}_i{nsteps}_l1{L1}_l2{L2}_o{noutputs}.png')
 
         # Creating Excel
         nlayers = len(model.layers)
         row = 0
 
         writer = ExcelWriter(
-            f'{path}Report{name}_i{nsteps}_l1{L1}_l2{L2}_o{noutputs}.xlsx', engine='openpyxl')
+            f'{path}R{name}_i{nsteps}_l1{L1}_l2{L2}_o{noutputs}.xlsx', engine='openpyxl')
 
         doOut = out.flatten()
         doYts = y_ts.flatten()
@@ -81,9 +102,12 @@ def generating_report(rate, nsteps, L1, L2, noutputs):
                               'Difference': doOut-doYts})
         dfOutput.to_excel(writer, sheet_name='Output', index=False)
 
-        doMSE = [MeanSquaredError(out, y_ts)]
-        dfMse = DataFrame({'MSE': doMSE})
-        dfMse.to_excel(writer, sheet_name='MSE', index=False)
+        dfMse = DataFrame({f'{model.metrics[1].name}': [model.metrics[1].result().numpy()],
+                           f'{model.metrics[2].name}': [model.metrics[2].result().numpy()],
+                           f'{model.metrics[3].name}': [model.metrics[3].result().numpy()],
+                           f'{model.metrics[4].name}': [model.metrics[4].result().numpy()],
+                           f'{model.metrics[5].name}': [model.metrics[5].result().numpy()]})
+        dfMse.to_excel(writer, sheet_name='Errors', index=False)
 
         for i in range(nlayers):
             varname = f'df{i}'
