@@ -1,17 +1,17 @@
-from msilib.schema import Error
 from formattingUniData import formatting_the_univariate_data
 from splitTrain import split_train
 from trainingMLP import training_MLP
 from meanSquaredError import MeanSquaredError
-import matplotlib.pyplot as plt
-from pandas import ExcelWriter, DataFrame, read_csv
-from os.path import isdir
-from os import makedirs
 from exceptionsTreating import exceptions_treating
 from normalize import normalize
+import matplotlib.pyplot as plt
+from pandas import ExcelWriter, DataFrame, read_csv
+from os import makedirs
+from os.path import isdir
+from msilib.schema import Error
 
 
-def generating_report(rate, nsteps, noutputs):
+def generating_report(rate, nsteps, L1, L2, noutputs):
     '''
     This function will receive 6 parameters:
         data: normalized data
@@ -36,10 +36,10 @@ def generating_report(rate, nsteps, noutputs):
         fig, ax = plt.subplots()
         ax.plot(data['POWER'])
         ax.set_title(
-            'Time series of Brazilian electrical consumption througout the years', fontdict={
+            'Série temporal do consumo de energia elétrica brasileira', fontdict={
                 'fontsize': 12}, pad=20)
-        ax.set_xlabel('Time (months)')
-        ax.set_ylabel(f'Electrical Consumption(MWh)')
+        ax.set_xlabel('Meses)')
+        ax.set_ylabel(f'Consumo de energia elétrica (MWh)')
         fig.savefig('Time series.png')
         path = f'./reports/{name}/'
 
@@ -52,7 +52,7 @@ def generating_report(rate, nsteps, noutputs):
         X_tr, y_tr, X_ts, y_ts = split_train(
             data_formatted, rate, nsteps, noutputs)
 
-        out, model = training_MLP(X_tr, y_tr, X_ts, nsteps, noutputs)
+        out, model = training_MLP(X_tr, y_tr, X_ts, nsteps, L1, L2, noutputs)
 
         mvalue = data['POWER'].max()
 
@@ -61,17 +61,18 @@ def generating_report(rate, nsteps, noutputs):
         ax.plot(out*mvalue, color='red', label='Forecast')
         ax.plot(y_ts*mvalue, color='blue', label='Test Serie')
         ax.set_title(
-            'Time series of Brazilian electrical consumption througout the years', fontdict={
+            f'Previsão da série temporal do consumo de energia elétrica em {len(out)} meses', fontdict={
                 'fontsize': 12}, pad=20)
-        ax.set_xlabel('Time (months)')
-        ax.set_ylabel(f'Electrical Consumption(MWh)')
+        ax.set_xlabel('Meses')
+        ax.set_ylabel(f'Consumo de energia elétrica (MWh)')
         fig.savefig(f'{path}fig{name}_i{nsteps}_o{noutputs}.png')
 
         # Creating Excel
         nlayers = len(model.layers)
         row = 0
 
-        writer = ExcelWriter(f'{path}Report{name}_i{nsteps}_o{noutputs}.xlsx', engine='openpyxl')
+        writer = ExcelWriter(
+            f'{path}Report{name}_i{nsteps}_o{noutputs}.xlsx', engine='openpyxl')
 
         doOut = out.flatten()
         doYts = y_ts.flatten()
