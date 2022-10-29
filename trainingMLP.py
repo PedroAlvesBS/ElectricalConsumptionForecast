@@ -12,7 +12,8 @@ def training_MLP(X, y, Xt, nsteps, L1, L2, noutputs):
             model.add(tf.keras.layers.Dense(
                 L1+L2, activation='relu', input_dim=nsteps))
             model.add(tf.keras.layers.Dense(noutputs))
-            model.compile(optimizer='adam', loss='mse')
+            model.compile(optimizer='adam', loss='mse', metrics=[
+                          tf.keras.losses.MeanSquaredError(), tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsolutePercentageError(), tf.keras.losses.CosineSimilarity(axis=1), tf.keras.losses.MeanSquaredLogarithmicError()])
 
             # Fitting the model
             model.fit(X, y, epochs=100, verbose=0)
@@ -25,7 +26,8 @@ def training_MLP(X, y, Xt, nsteps, L1, L2, noutputs):
                 L1, activation='relu', input_dim=nsteps))
             model.add(tf.keras.layers.Dense(L2, activation='relu'))
             model.add(tf.keras.layers.Dense(noutputs))
-            model.compile(optimizer='adam', loss='mse')
+            model.compile(optimizer='adam', loss='mse', metrics=[
+                          tf.keras.losses.MeanSquaredError(), tf.keras.losses.MeanAbsoluteError(), tf.keras.losses.MeanAbsolutePercentageError(), tf.keras.losses.CosineSimilarity(axis=1), tf.keras.losses.MeanSquaredLogarithmicError()])
 
             # Fitting the model
             model.fit(X, y, epochs=100, verbose=0)
