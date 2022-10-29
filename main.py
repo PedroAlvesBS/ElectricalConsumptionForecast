@@ -7,12 +7,14 @@ def total_execution():
     #        ^ Univariate data
     # rate of data 0.6 == 60%
     # name is the pattern to be outputted
-
     rt = 0.6
     nstp = 1
     nout = 1
+    layer1 = 20
+    layer2 = 20
     generating_report(rate=rt,
-                      nsteps=nstp, noutputs=nout)
+                      nsteps=nstp, L1=layer1,
+                      L2=layer2, noutputs=nout)
 
 
 if __name__ == '__main__':
